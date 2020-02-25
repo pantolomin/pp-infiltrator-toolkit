@@ -60,7 +60,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="factionVision\OnLevelStart.cs" />
+    <Compile Include="factionVision\TacticalFactionVision.cs" />
     <Compile Include="healthbar\LateUpdate.cs" />
     <Compile Include="Indicators.cs" />
     <Compile Include="Mod.cs" />

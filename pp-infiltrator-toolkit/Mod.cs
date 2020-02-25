@@ -12,6 +12,9 @@ namespace phoenix_point.mod.infiltrator_toolkit
         private const string FILE_NAME = "pp-infiltrator-toolkit.properties";
         private const string CrossbowIsSilent = "CrossbowIsSilent";
         private static bool crossbowIsSilent;
+        private const string MinPerception = "MinPerception";
+        private static int minPerception;
+        
         private static Dictionary<string, string> generationProperties = new Dictionary<string, string>();
 
         public ModLoadPriority Priority => ModLoadPriority.Normal;
@@ -43,6 +46,7 @@ namespace phoenix_point.mod.infiltrator_toolkit
                 }
             }
             crossbowIsSilent = GetValue(CrossbowIsSilent, bool.Parse, true);
+            minPerception = GetValue(MinPerception, int.Parse, 5);
 
             HarmonyInstance.Create("phoenixpoint.InfiltratorToolkit").PatchAll(Assembly.GetExecutingAssembly());
         }
@@ -67,6 +71,11 @@ namespace phoenix_point.mod.infiltrator_toolkit
         internal static bool IsCrossbowSilent()
         {
             return crossbowIsSilent;
+        }
+
+        internal static int GetMinPerception()
+        {
+            return minPerception;
         }
     }
 }
