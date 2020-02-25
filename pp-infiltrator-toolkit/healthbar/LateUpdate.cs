@@ -5,7 +5,7 @@ using PhoenixPoint.Tactical.View;
 namespace phoenix_point.mod.infiltrator_toolkit.healthbar
 {
     [HarmonyPatch(typeof(HealthbarUIActorElement), "LateUpdate")]
-    public class LateUpdate
+    class LateUpdate
     {
         [HarmonyPostfix]
         private static void Postfix(HealthbarUIActorElement __instance)

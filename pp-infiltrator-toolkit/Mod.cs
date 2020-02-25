@@ -10,6 +10,8 @@ namespace phoenix_point.mod.infiltrator_toolkit
     public class Mod : IPhoenixPointMod
     {
         private const string FILE_NAME = "pp-infiltrator-toolkit.properties";
+        private const string CrossbowIsSilent = "CrossbowIsSilent";
+        private static bool crossbowIsSilent;
         private static Dictionary<string, string> generationProperties = new Dictionary<string, string>();
 
         public ModLoadPriority Priority => ModLoadPriority.Normal;
@@ -40,6 +42,7 @@ namespace phoenix_point.mod.infiltrator_toolkit
                     FileLog.Log("Failed to read the configuration file (" + filePath + "): " + e.ToString());
                 }
             }
+            crossbowIsSilent = GetValue(CrossbowIsSilent, bool.Parse, true);
 
             HarmonyInstance.Create("phoenixpoint.InfiltratorToolkit").PatchAll(Assembly.GetExecutingAssembly());
         }
@@ -59,6 +62,11 @@ namespace phoenix_point.mod.infiltrator_toolkit
                 }
             }
             return defaultValue;
+        }
+
+        internal static bool IsCrossbowSilent()
+        {
+            return crossbowIsSilent;
         }
     }
 }

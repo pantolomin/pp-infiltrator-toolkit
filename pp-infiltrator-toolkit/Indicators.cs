@@ -7,6 +7,7 @@ using UnityEngine;
 using PhoenixPoint.Common.View.ViewControllers;
 using System;
 using Harmony;
+using PhoenixPoint.Common.Entities.GameTags;
 
 namespace phoenix_point.mod.infiltrator_toolkit
 {
@@ -35,9 +36,9 @@ namespace phoenix_point.mod.infiltrator_toolkit
             if (defaultColor == null)
             {
                 defaultColor = classIcon.MainClassIconMask.color;
-                locatedColor = Mod.GetValue("LocatedColor", val => toColor(val), toColor("ffcc00"));
-                revealedColor = Mod.GetValue("RevealedColor", val => toColor(val), toColor("e65c00"));
-                alertedColor = Mod.GetValue("AlertedColor", val => toColor(val), toColor("cc0066"));
+                locatedColor = Mod.GetValue("LocatedColor", toColor, toColor("ffcc00"));
+                revealedColor = Mod.GetValue("RevealedColor", toColor, toColor("e65c00"));
+                alertedColor = Mod.GetValue("AlertedColor", toColor, toColor("cc0066"));
             }
             Color color = defaultColor.Value;
             if (actor.IsFromViewerFaction)
@@ -65,6 +66,15 @@ namespace phoenix_point.mod.infiltrator_toolkit
             UpdateIndicator(classIcon, color);
         }
 
+        private static void UpdateIndicator(ActorClassIconElement classIcon, Color color)
+        {
+            classIcon.MainClassIcon.color = color;
+            if (classIcon.SecondaryClassIcon != null)
+            {
+                classIcon.SecondaryClassIcon.color = color;
+            }
+        }
+
         private static Color toColor(string colorComponents)
         {
             if (colorComponents.Length < 6 || colorComponents.Length > 8)
@@ -77,15 +87,6 @@ namespace phoenix_point.mod.infiltrator_toolkit
             float green = ((argb >> 8) & 0xFF) / 255f;
             float blue = (argb & 0xFF) / 255f;
             return new Color(red, green, blue, alpha > 0f ? alpha : 1f);
-        }
-
-        private static void UpdateIndicator(ActorClassIconElement classIcon, Color color)
-        {
-            classIcon.MainClassIcon.color = color;
-            if (classIcon.SecondaryClassIcon != null)
-            {
-                classIcon.SecondaryClassIcon.color = color;
-            }
         }
     }
 }

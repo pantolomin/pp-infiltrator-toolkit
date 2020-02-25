@@ -62,10 +62,10 @@
   <ItemGroup>
     <Compile Include="factionVision\OnLevelStart.cs" />
     <Compile Include="healthbar\LateUpdate.cs" />
-    <Compile Include="Indicator.cs" />
     <Compile Include="Indicators.cs" />
     <Compile Include="Mod.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="weapon\IsAttackSilent.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="pp-infiltrator-toolkit.properties" />
