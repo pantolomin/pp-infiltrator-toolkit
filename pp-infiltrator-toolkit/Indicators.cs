@@ -1,28 +1,22 @@
-﻿using Harmony;
-using PhoenixPoint.Tactical.AI;
+﻿using PhoenixPoint.Tactical.AI;
 using PhoenixPoint.Tactical.Entities;
 using PhoenixPoint.Tactical.Levels;
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
+using PhoenixPoint.Common.View.ViewControllers;
+using System;
+using Harmony;
 
 namespace phoenix_point.mod.infiltrator_toolkit
 {
     public class Indicators
     {
-        private static readonly IList<TacticalFactionVision> aiFactions;
-        private static readonly Indicator locatedIndicator;
-        private static readonly Indicator revealedIndicator;
-        private static readonly Indicator alertedIndicator;
-
-        static Indicators()
-        {
-            aiFactions = new List<TacticalFactionVision>(5);
-            locatedIndicator = new Indicator("LocatedIndicator", Color.yellow);
-            revealedIndicator = new Indicator("RevealedIndicator", Color.red);
-            alertedIndicator = new Indicator("AlertedIndicator", Color.magenta);
-        }
+        private static readonly IList<TacticalFactionVision> aiFactions = new List<TacticalFactionVision>(10);
+        private static Color? defaultColor;
+        private static Color locatedColor;
+        private static Color revealedColor;
+        private static Color alertedColor;
 
         internal static void DeclareFaction(TacticalFactionVision factionVision)
         {
@@ -32,73 +26,65 @@ namespace phoenix_point.mod.infiltrator_toolkit
             }
         }
 
-        internal static void InitIndicators(RectTransform transform, TacticalActorBase actor, Sprite smallIcon)
+        internal static void UpdateIndicators(ActorClassIconElement classIcon, TacticalActorBase actor)
         {
+            if (classIcon?.MainClassIconMask == null)
+            {
+                return;
+            }
+            if (defaultColor == null)
+            {
+                defaultColor = classIcon.MainClassIconMask.color;
+                locatedColor = Mod.GetValue("LocatedColor", val => toColor(val), toColor("ffcc00"));
+                revealedColor = Mod.GetValue("RevealedColor", val => toColor(val), toColor("e65c00"));
+                alertedColor = Mod.GetValue("AlertedColor", val => toColor(val), toColor("cc0066"));
+            }
+            Color color = defaultColor.Value;
             if (actor.IsFromViewerFaction)
             {
-                CreateIndicator(transform, locatedIndicator, smallIcon);
-                CreateIndicator(transform, revealedIndicator, smallIcon);
-            }
-            else
-            {
-                CreateIndicator(transform, alertedIndicator, smallIcon);
-            }
-        }
-
-        internal static void UpdateIndicators(Transform transform, TacticalActorBase actor)
-        {
-            if (actor.IsFromViewerFaction)
-            {
-                FileLog.Log("UpdateIndicators(" + actor.GetDisplayName() + ") -> viewer");
-                bool revealed = false;
-                bool located = false;
                 if (!actor.IsDead)
                 {
-                    revealed = aiFactions.Where(facVis => facVis.IsRevealed(actor)).Any();
-                    if (!revealed)
+                    if (aiFactions.Where(facVis => facVis.IsRevealed(actor)).Any())
                     {
-                        located = aiFactions.Where(facVis => facVis.IsLocated(actor)).Any();
+                        color = revealedColor;
                     }
-                    FileLog.Log("revealed: " + revealed+", located: "+ located);
+                    else if (aiFactions.Where(facVis => facVis.IsLocated(actor)).Any())
+                    {
+                        color = locatedColor;
+                    }
                 }
-                UpdateIndicator(transform, locatedIndicator, located);
-                UpdateIndicator(transform, revealedIndicator, revealed);
             }
             else
             {
-                FileLog.Log("UpdateIndicators(" + actor.GetDisplayName() + ") -> AI");
                 TacAIActor aiActor = actor.AIActor;
-                if (aiActor != null)
+                if (aiActor != null && aiActor.IsAlerted)
                 {
-                    FileLog.Log("alerted: " + aiActor.IsAlerted);
-                    UpdateIndicator(transform, alertedIndicator, aiActor.IsAlerted);
+                    color = alertedColor;
                 }
             }
+            UpdateIndicator(classIcon, color);
         }
 
-        private static void CreateIndicator(Transform transform, Indicator indicator, Sprite smallIcon)
+        private static Color toColor(string colorComponents)
         {
-            indicator.CreateSprite(smallIcon);
-            GameObject gameObject = new GameObject(indicator.Name);
-            RectTransform rectTransform = gameObject.AddComponent<RectTransform>();
-            rectTransform.SetParent(transform, false);
-            Vector2 vector2 = new Vector2(0f, 1f);
-            rectTransform.anchorMin = vector2;
-            rectTransform.anchorMax = vector2;
-            rectTransform.localScale = Vector2.one * 0.25f;
-            Image image = gameObject.AddComponent<Image>();
-            image.sprite = indicator.Icon;
-            image.preserveAspect = true;
-            gameObject.SetActive(false);
-            image.color = indicator.Colour;
-        }
-
-        private static void UpdateIndicator(Transform transform, Indicator indicator, bool showIcon)
-        {
-            transform = transform.Find(indicator.Name);
-            if (transform != null)
+            if (colorComponents.Length < 6 || colorComponents.Length > 8)
             {
-                transform.gameObject.SetActive(showIcon);
+                throw new Exception("Cannot parse " + colorComponents + " to a color");
+            }
+            int argb = Convert.ToInt32(colorComponents, 16);
+            float alpha = ((argb >> 24) & 0xFF) / 255f;
+            float red = ((argb >> 16) & 0xFF) / 255f;
+            float green = ((argb >> 8) & 0xFF) / 255f;
+            float blue = (argb & 0xFF) / 255f;
+            return new Color(red, green, blue, alpha > 0f ? alpha : 1f);
+        }
+
+        private static void UpdateIndicator(ActorClassIconElement classIcon, Color color)
+        {
+            classIcon.MainClassIcon.color = color;
+            if (classIcon.SecondaryClassIcon != null)
+            {
+                classIcon.SecondaryClassIcon.color = color;
             }
         }
     }

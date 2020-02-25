@@ -11,7 +11,7 @@ namespace phoenix_point.mod.infiltrator_toolkit.healthbar
         private static void Postfix(HealthbarUIActorElement __instance)
         {
             Indicators.UpdateIndicators(
-                __instance.ActorClassIconElement.MainClassIcon.transform,
+                __instance.ActorClassIconElement,
                 __instance.Actor as TacticalActorBase);
         }
     }
