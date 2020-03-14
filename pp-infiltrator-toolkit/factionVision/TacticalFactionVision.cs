@@ -15,31 +15,13 @@ namespace phoenix_point.mod.infiltrator_toolkit.factionVision
         }
     }
 
-    [HarmonyPatch(typeof(TacticalFactionVision), "CheckVisibleLine", typeof(TacticalActorBase), typeof(Vector3), typeof(Vector3), typeof(float), typeof(bool))]
+    [HarmonyPatch(typeof(TacticalFactionVision), "CheckVisibleLine")]
     class CheckVisibleLine
     {
-        internal static float currentRangeMultiplier;
-
         [HarmonyPrefix]
-        private static void Prefix(float rangeMultiplier)
+        private static void Prefix(ref float basePerceptionRange)
         {
-            currentRangeMultiplier = rangeMultiplier;
-        }
-    }
-
-    [HarmonyPatch(typeof(TacticalFactionVision), "CastVisiblilityLineCheck")]
-    class CastVisiblilityLineCheck
-    {
-        [HarmonyPrefix]
-        private static void Prefix(ref float perceptionRange)
-        {
-            float minPerception = Mod.GetMinPerception();
-            if (CheckVisibleLine.currentRangeMultiplier < 0f)
-            {
-                FileLog.Log("CheckVisibleLine.currentRangeMultiplier: " + CheckVisibleLine.currentRangeMultiplier);
-                minPerception *= 1f + CheckVisibleLine.currentRangeMultiplier;
-            }
-            perceptionRange = Mathf.Max(minPerception, perceptionRange);
+            basePerceptionRange = Mod.GetMinPerception();
         }
     }
 }
