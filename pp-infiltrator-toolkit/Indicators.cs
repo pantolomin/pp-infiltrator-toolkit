@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using PhoenixPoint.Common.View.ViewControllers;
 using System;
-using Harmony;
-using PhoenixPoint.Common.Entities.GameTags;
 
 namespace phoenix_point.mod.infiltrator_toolkit
 {
@@ -36,9 +34,9 @@ namespace phoenix_point.mod.infiltrator_toolkit
             if (defaultColor == null)
             {
                 defaultColor = classIcon.MainClassIconMask.color;
-                locatedColor = Mod.GetValue("LocatedColor", toColor, toColor("ffcc00"));
-                revealedColor = Mod.GetValue("RevealedColor", toColor, toColor("e65c00"));
-                alertedColor = Mod.GetValue("AlertedColor", toColor, toColor("cc0066"));
+                locatedColor = toColor(Mod.Config.locatedColor);
+                revealedColor = toColor(Mod.Config.revealedColor);
+                alertedColor = toColor(Mod.Config.alertedColor);
             }
             Color color = defaultColor.Value;
             if (actor.IsFromViewerFaction)
