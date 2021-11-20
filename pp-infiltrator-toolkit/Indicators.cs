@@ -6,23 +6,23 @@ using System.Collections.Generic;
 using UnityEngine;
 using PhoenixPoint.Common.View.ViewControllers;
 using System;
+using PhoenixPoint.Common.Core;
 
 namespace phoenix_point.mod.infiltrator_toolkit
 {
     public class Indicators
     {
-        private static readonly IList<TacticalFactionVision> aiFactions = new List<TacticalFactionVision>(10);
+        private static readonly IList<TacticalFactionVision> factions = new List<TacticalFactionVision>(10);
         private static Color? defaultColor;
         private static Color locatedColor;
         private static Color revealedColor;
         private static Color alertedColor;
 
+        public static object TacticalLevel { get; private set; }
+
         internal static void DeclareFaction(TacticalFactionVision factionVision)
         {
-            if (factionVision.Faction.IsControlledByAI)
-            {
-                aiFactions.Add(factionVision);
-            }
+            factions.Add(factionVision);
         }
 
         internal static void UpdateIndicators(ActorClassIconElement classIcon, TacticalActorBase actor)
@@ -43,11 +43,12 @@ namespace phoenix_point.mod.infiltrator_toolkit
             {
                 if (!actor.IsDead)
                 {
-                    if (aiFactions.Where(facVis => facVis.IsRevealed(actor)).Any())
+                    TacticalFaction viewerFaction = actor.TacticalLevel.View.ViewerFaction;
+                    if (factions.Where(facVis => facVis.Faction.GetRelationTo(viewerFaction) == FactionRelation.Enemy).Where(facVis => facVis.IsRevealed(actor)).Any())
                     {
                         color = revealedColor;
                     }
-                    else if (aiFactions.Where(facVis => facVis.IsLocated(actor)).Any())
+                    else if (factions.Where(facVis => facVis.Faction.GetRelationTo(viewerFaction) == FactionRelation.Enemy).Where(facVis => facVis.IsLocated(actor)).Any())
                     {
                         color = locatedColor;
                     }
