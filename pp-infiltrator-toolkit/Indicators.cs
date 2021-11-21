@@ -12,7 +12,7 @@ namespace phoenix_point.mod.infiltrator_toolkit
 {
     public class Indicators
     {
-        private static readonly IList<TacticalFactionVision> factions = new List<TacticalFactionVision>(10);
+        private static readonly ISet<TacticalFactionVision> enemyFactions = new HashSet<TacticalFactionVision>(10);
         private static Color? defaultColor;
         private static Color locatedColor;
         private static Color revealedColor;
@@ -22,7 +22,14 @@ namespace phoenix_point.mod.infiltrator_toolkit
 
         internal static void DeclareFaction(TacticalFactionVision factionVision)
         {
-            factions.Add(factionVision);
+            TacticalFaction viewerFaction = factionVision.Faction.TacticalLevel.View.ViewerFaction;
+            if (viewerFaction != factionVision.Faction)
+            {
+                if (viewerFaction.GetRelationTo(factionVision.Faction) == FactionRelation.Enemy)
+                {
+                    enemyFactions.Add(factionVision);
+                }
+            }
         }
 
         internal static void UpdateIndicators(ActorClassIconElement classIcon, TacticalActorBase actor)
@@ -39,27 +46,21 @@ namespace phoenix_point.mod.infiltrator_toolkit
                 alertedColor = toColor(Mod.Config.alertedColor);
             }
             Color color = defaultColor.Value;
-            if (actor.IsFromViewerFaction)
+            if (enemyFactions.Contains(actor.TacticalFaction.Vision))
             {
-                if (!actor.IsDead)
-                {
-                    TacticalFaction viewerFaction = actor.TacticalLevel.View.ViewerFaction;
-                    if (factions.Where(facVis => facVis.Faction.GetRelationTo(viewerFaction) == FactionRelation.Enemy).Where(facVis => facVis.IsRevealed(actor)).Any())
-                    {
-                        color = revealedColor;
-                    }
-                    else if (factions.Where(facVis => facVis.Faction.GetRelationTo(viewerFaction) == FactionRelation.Enemy).Where(facVis => facVis.IsLocated(actor)).Any())
-                    {
-                        color = locatedColor;
-                    }
-                }
-            }
-            else
-            {
-                TacAIActor aiActor = actor.AIActor;
-                if (aiActor != null && aiActor.IsAlerted)
+                if (actor.AIActor?.IsAlerted ?? false)
                 {
                     color = alertedColor;
+                }
+            } else if (!actor.IsDead)
+            {
+                if (enemyFactions.Where(facVis => facVis.IsRevealed(actor)).Any())
+                {
+                    color = revealedColor;
+                }
+                else if (enemyFactions.Where(facVis => facVis.IsLocated(actor)).Any())
+                {
+                    color = locatedColor;
                 }
             }
             UpdateIndicator(classIcon, color);
